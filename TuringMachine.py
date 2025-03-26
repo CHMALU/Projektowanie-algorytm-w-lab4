@@ -32,6 +32,10 @@ class MT:
                 break
 
             nowy_stan, nowy_symbol, ruch = self.fun_prz[self.akt_stan][akt_symbol]
+
+            print(f"Przejście: z (Stan: {self.akt_stan}, Symbol: {akt_symbol}) -> (Stan: {nowy_stan}, Nowy symbol: {nowy_symbol}, Ruch: {ruch})")
+
+
             self.tasma[self.glowa] = nowy_symbol
             self.akt_stan = nowy_stan
 
@@ -260,7 +264,7 @@ cyfry_maszyna = MT(zb_stnw, alfbt_wej, alfbt_tsm, fun_prz, stn_p, stn_ak, stn_od
 def symuluj(tape_input):
     print(f"\nSymulacja dla wejścia: {tape_input}")
     steps = cyfry_maszyna.start(tape_input)
-    wizualizuj_maszyne(cyfry_maszyna, steps)
+    # wizualizuj_maszyne(cyfry_maszyna, steps)
 
 w1 = "[0107, 999422, 3]"
 w2 = "[0107 999422, 3]"

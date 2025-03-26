@@ -2,7 +2,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import time
 
-class TuringMachine:
+class MT:
     def __init__(self, zb_stnw, alfbt_wej, alfbt_tsm, fun_prz, stn_p, stn_ak, stn_od):
         self.zb_stnw = zb_stnw
         self.alfbt_wej = alfbt_wej
@@ -15,7 +15,7 @@ class TuringMachine:
         self.tasma = []
         self.glowa = 0
 
-    def przetworz_wejscie(self, slowo):
+    def start(self, slowo):
         self.tasma = list(slowo) + ['_']
         self.glowa = 0
         kroki = []
@@ -68,16 +68,20 @@ def wizualizuj_maszyne(mt, kroki):
         rysuj_graf(stan, tasma, glowa)
     plt.show()
 
-# #! Zadanie 1
+#!Zadanie 1
+#przepisuje dane z obrazka
+zb_stnw = {"q0", "q1", "q2", "q3", "q4", "q5", "q6", "qa", "qr"}
 stn_p = 'q0'
 stn_ak = 'qa'
 stn_od = 'qr'
 alfbt_wej = {"a", "o", "_"}
 alfbt_tsm = {"a", "o", "å", "_"}
 
+#zadanie przykładowe od Pana, lecz można zmienić na dowolny inny który obejmuje słownik
 w1 = "aaa_"
 print(f"\nZadanie 1 dla słowa: {w1}")
 
+#przepisuje przejścia na grafie z obrazka
 fun_prz = {
     "q0": {"a": ["q1", "å", "R"], "_": ["qr", "a", "L"]},
     "q1": {"a": ["q2", "a", "L"], "o": ["q1", "o", "R"], "_": ["qa", "_", "L"]},
@@ -88,18 +92,23 @@ fun_prz = {
     "q6": {"a": ["q6", "a", "L"], "o": ["q6", "o", "L"], "å": ["q1", "å", "R"]},
 }
 
-machine_1 = TuringMachine(set(fun_prz.keys()), alfbt_wej, alfbt_tsm, fun_prz, stn_p, stn_ak, stn_od)
-steps = machine_1.przetworz_wejscie(w1)
+#wrzucamy parametry do defa maszyny turinga
+mt = MT(zb_stnw, alfbt_wej, alfbt_tsm, fun_prz, stn_p, stn_ak, stn_od)
+#odpalam 'maszyne' i tworzę zmienną kroki, która może przydać się do przyszłej wizualizacji
+steps = mt.start(w1)
 
-# Definicja maszyny Turinga dla Zadania 2
-states = {"q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "qa", "qr"}
-input_alphabet = {"0", "1", "b", "_"}
-tape_alphabet = {"0", "1", "b", "ϕ", "†", "_"}
-start_state = "q0"
-accept_state = "qa"
-reject_state = "qr"
 
-transitions = {
+#!Zadania 2
+#przepisuje dane z obrazka
+zb_stnw = {"q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "qa", "qr"}
+alfbt_wej = {"0", "1", "b", "_"}
+alfbt_tsm = {"0", "1", "b", "ϕ", "†", "_"}
+stn_p = "q0"
+stn_ak = "qa"
+stn_od = "qr"
+
+#przepisuje przejścia na grafie z obrazka
+fun_prz = {
     "q0": {"b": ["q1", "b", "R"], "0": ["q2", "ϕ", "R"], "1": ["q3", "†", "R"], "ϕ": ["q7", "ϕ", "R"],
            "†": ["q7", "†", "R"]},
     "q1": {"ϕ": ["q1", "ϕ", "R"], "†": ["q1", "†", "R"], "0": ["qr", "0", "L"], "1": ["qr", "1", "L"],
@@ -109,16 +118,19 @@ transitions = {
     "q4": {"ϕ": ["q4", "ϕ", "R"], "_": ["qr", "_", "R"], "1": ["qr", "1", "R"]},
     "q5": {"ϕ": ["q5", "ϕ", "R"], "†": ["q5", "†", "R"], "_": ["qr", "_", "R"], "0": ["qr", "0", "R"]},
     "q6": {"ϕ": ["q6", "ϕ", "L"], "†": ["q6", "†", "L"], "b": ["q7", "b", "L"], "0": ["q7", "ϕ", "L"]},
-    "q7": {"0": ["q0", "0", "L"], "1": ["q0", "1", "L"], "ϕ": ["q7",  "ϕ", "R"], "†": ["q7", "†", "R"]}
+    "q7": {"0": ["q0", "0", "L"], "1": ["q0", "1", "L"], "ϕ": ["q7", "ϕ", "R"], "†": ["q7", "†", "R"]}
 }
 
-# Uruchomienie symulacji i wizualizacji
-machine = TuringMachine(states, input_alphabet, tape_alphabet, transitions, start_state, accept_state, reject_state)
+#wrzucamy parametry do defa maszyny turinga
+mt = MT(zb_stnw, alfbt_wej, alfbt_tsm, fun_prz, stn_p, stn_ak, stn_od)
 
+#zadanie przykładowe od Pana, lecz można zmienić na dowolny inny który obejmuje słownik
 w1 = "1b1b0_"
 print(f"\nZadanie 2 dla słowa: {w1}")
-steps = machine.przetworz_wejscie(w1)
-wizualizuj_maszyne(machine, steps)
+#odpalam 'maszyne' i tworzę zmienną kroki, która może przydać się do przyszłej wizualizacji
+steps = mt.start(w1)
+#wizualizacja
+wizualizuj_maszyne(mt, steps)
 
 #! Zadanie 3
 def decyduj_jezyk(alphabet, word):
@@ -141,10 +153,13 @@ def decyduj_jezyk(alphabet, word):
 
 
 alphabet = set("ehf_") # dodatkowo dodałem _ bo nie ma go w przykładzie a jest blank
-word = ["x_", "hexhf_", "hexhff_"]
-for w in word:
-    print(decyduj_jezyk(alphabet, w))
 
+w1 = "x_"
+print(decyduj_jezyk(alphabet, w1))
+w2 = "hexhf_"
+print(decyduj_jezyk(alphabet, w2))
+w3 = "hexhff_"
+print(decyduj_jezyk(alphabet, w3))
 
 #! Zadanie 4
 '''
@@ -176,17 +191,17 @@ Maszyna wykonuje jeden przebieg taśmą – każdy symbol jest sprawdzany co naj
 '''
 
 #! Zadanie 5
-states = {"q0", "q1", "q2", "q3", "qa", "qr"}
+zb_stnw = {"q0", "q1", "q2", "q3", "qa", "qr"}
 
 # Alfabet wejściowy
-input_alphabet = set("[],0123456789 ")
-tape_alphabet = set("[],0123456789 _")  # dodajemy '_' jako symbol pusty
+alfbt_wej = set("[],0123456789 ")
+alfbt_tsm = set("[],0123456789 _")  # dodajemy '_' jako symbol pusty
 
-start_state = "q0"
-accept_state = "qa"
-reject_state = "qr"
+stn_p = "q0"
+stn_ak = "qa"
+stn_od = "qr"
 
-transitions = {
+fun_prz = {
     # q0: Na początku ignorujemy spacje, oczekujemy znaku '['
     "q0": {
         " ": ["q0", " ", "R"],
@@ -237,14 +252,14 @@ transitions = {
 
 # W stanie q1, gdy trafimy na cyfrę, przechodzimy do q2
 for d in "0123456789":
-    transitions["q1"][d] = ["q2", d, "R"]
+    fun_prz["q1"][d] = ["q2", d, "R"]
 
-cyfry_maszyna = TuringMachine(states, input_alphabet, tape_alphabet, transitions, start_state, accept_state, reject_state)
+cyfry_maszyna = MT(zb_stnw, alfbt_wej, alfbt_tsm, fun_prz, stn_p, stn_ak, stn_od)
 
 # Funkcja pomocnicza do symulacji i wizualizacji
 def symuluj(tape_input):
     print(f"\nSymulacja dla wejścia: {tape_input}")
-    steps = cyfry_maszyna.przetworz_wejscie(tape_input)
+    steps = cyfry_maszyna.start(tape_input)
     wizualizuj_maszyne(cyfry_maszyna, steps)
 
 w1 = "[0107, 999422, 3]"
@@ -254,8 +269,8 @@ w3 = "[0107, 999a22, 3]"
 # Symulacje
 symuluj(w1)
 time.sleep(2)
-cyfry_maszyna = TuringMachine(states, input_alphabet, tape_alphabet, transitions, start_state, accept_state, reject_state)
+cyfry_maszyna = MT(zb_stnw, alfbt_wej, alfbt_tsm, fun_prz, stn_p, stn_ak, stn_od)
 symuluj(w2)
 time.sleep(2)
-cyfry_maszyna = TuringMachine(states, input_alphabet, tape_alphabet, transitions, start_state, accept_state, reject_state)
+cyfry_maszyna = MT(zb_stnw, alfbt_wej, alfbt_tsm, fun_prz, stn_p, stn_ak, stn_od)
 symuluj(w3)

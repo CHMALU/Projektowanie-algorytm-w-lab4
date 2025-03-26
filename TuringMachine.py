@@ -68,7 +68,7 @@ def wizualizuj_maszyne(mt, kroki):
         rysuj_graf(stan, tasma, glowa)
     plt.show()
 
-# Zadanie 1
+# #! Zadanie 1
 stn_p = 'q0'
 stn_ak = 'qa'
 stn_od = 'qr'
@@ -109,7 +109,7 @@ transitions = {
     "q4": {"ϕ": ["q4", "ϕ", "R"], "_": ["qr", "_", "R"], "1": ["qr", "1", "R"]},
     "q5": {"ϕ": ["q5", "ϕ", "R"], "†": ["q5", "†", "R"], "_": ["qr", "_", "R"], "0": ["qr", "0", "R"]},
     "q6": {"ϕ": ["q6", "ϕ", "L"], "†": ["q6", "†", "L"], "b": ["q7", "b", "L"], "0": ["q7", "ϕ", "L"]},
-    "q7": {"0": ["q0", "0", "L"], "1": ["q0", "1", "L"], "ϕ": ["q7", "ϕ", "R"], "†": ["q7", "†", "R"]}
+    "q7": {"0": ["q0", "0", "L"], "1": ["q0", "1", "L"], "ϕ": ["q7",  "ϕ", "R"], "†": ["q7", "†", "R"]}
 }
 
 # Uruchomienie symulacji i wizualizacji
@@ -119,3 +119,143 @@ w1 = "1b1b0_"
 print(f"\nZadanie 2 dla słowa: {w1}")
 steps = machine.przetworz_wejscie(w1)
 wizualizuj_maszyne(machine, steps)
+
+#! Zadanie 3
+def decyduj_jezyk(alphabet, word):
+    if word.count('x') != 1:
+        return f"{word}\n Język nierozstrzygnięty: nie ma x"
+
+    # Podziel słowo na a, b możemy tak zrobić bo wiemy ze w a i b nie ma 'x'
+    a, b = word.split('x')
+
+    # Sprawdź, czy a i b zawierają tylko symbole z (alphabet - {'x'})
+    allowed = alphabet - {'x'}
+    if not all(ch in allowed for ch in a + b):
+        return f"{word}\n Język nierozstrzygnięty nie ma znaku z alfabetu"
+
+    # Sprawdź, czy długości a i b są równe
+    if len(a) == len(b):
+        return f"{word}\n Język rozstrzygnięty"
+    else:
+        return f"{word}\n Język nierozstrzygnięty różne długości a i b"
+
+
+alphabet = set("ehf_") # dodatkowo dodałem _ bo nie ma go w przykładzie a jest blank
+word = ["x_", "hexhf_", "hexhff_"]
+for w in word:
+    print(decyduj_jezyk(alphabet, w))
+
+
+#! Zadanie 4
+'''
+Maszyna Turinga: Weryfikacja poprawności zapisu listy wierzchołków
+
+Stan q0 (start):
+    - Jeśli aktualny symbol == '[', przejdź do stanu q1; w przeciwnym razie -> Odrzuć (qr).
+
+Stan q1:
+    - Jeśli aktualny symbol == ']' (pusta lista), przejdź do stanu akceptacji (qa).
+    - Jeśli aktualny symbol jest cyfrą (0-9), przejdź do stanu q2.
+    - W przeciwnym razie -> Odrzuć.
+
+Stan q2 (odczyt wierzchołka):
+    - Dopóki aktualny symbol jest cyfrą, przesuwaj głowicę w prawo.
+    - Gdy napotkasz symbol niebędący cyfrą:
+        - Jeśli symbol to ',' – przejdź do stanu q1 (oczekiwanie kolejnego wierzchołka).
+        - Jeśli symbol to ']' – przejdź do stanu akceptacji (qa).
+        - W przeciwnym razie -> Odrzuć.
+
+Stan qa:
+    - Akceptuj zapis.
+
+Stan qr:
+    - Odrzuć zapis.
+
+Komentarz dotyczący złożoności:
+Maszyna wykonuje jeden przebieg taśmą – każdy symbol jest sprawdzany co najwyżej raz, zatem złożoność czasowa wynosi O(n), gdzie n to długość słowa.
+'''
+
+#! Zadanie 5
+states = {"q0", "q1", "q2", "q3", "qa", "qr"}
+
+# Alfabet wejściowy
+input_alphabet = set("[],0123456789 ")
+tape_alphabet = set("[],0123456789 _")  # dodajemy '_' jako symbol pusty
+
+start_state = "q0"
+accept_state = "qa"
+reject_state = "qr"
+
+transitions = {
+    # q0: Na początku ignorujemy spacje, oczekujemy znaku '['
+    "q0": {
+        " ": ["q0", " ", "R"],
+        "[": ["q1", "[", "R"]
+    },
+    # q1: Oczekiwanie na pierwszy wierzchołek lub koniec listy
+    "q1": {
+        " ": ["q1", " ", "R"],
+        "]": ["qa", "]", "R"],
+        ",": ["qr", ",", "R"]  # przecinek na początku jest niedozwolony
+    },
+    # q2: Czytanie wierzchołka – ciąg cyfr
+    "q2": {
+        # Dla każdej cyfry pozostajemy w q2
+        "0": ["q2", "0", "R"],
+        "1": ["q2", "1", "R"],
+        "2": ["q2", "2", "R"],
+        "3": ["q2", "3", "R"],
+        "4": ["q2", "4", "R"],
+        "5": ["q2", "5", "R"],
+        "6": ["q2", "6", "R"],
+        "7": ["q2", "7", "R"],
+        "8": ["q2", "8", "R"],
+        "9": ["q2", "9", "R"],
+        # Po cyfrze można mieć spację lub od razu przecinek albo ']'
+        " ": ["q3", " ", "R"],
+        ",": ["q1", ",", "R"],
+        "]": ["qa", "]", "R"]
+    },
+    # q3: Pomijanie spacji po wierzchołku
+    "q3": {
+        " ": ["q3", " ", "R"],
+        ",": ["q1", ",", "R"],
+        "]": ["qa", "]", "R"],
+        # Jeżeli trafimy na cyfrę w stanie q3, to oznacza, że wierzchołek został źle zapisany (cyfry nie mogą wystąpić po spacji)
+        "0": ["qr", "0", "R"],
+        "1": ["qr", "1", "R"],
+        "2": ["qr", "2", "R"],
+        "3": ["qr", "3", "R"],
+        "4": ["qr", "4", "R"],
+        "5": ["qr", "5", "R"],
+        "6": ["qr", "6", "R"],
+        "7": ["qr", "7", "R"],
+        "8": ["qr", "8", "R"],
+        "9": ["qr", "9", "R"]
+    }
+}
+
+# W stanie q1, gdy trafimy na cyfrę, przechodzimy do q2
+for d in "0123456789":
+    transitions["q1"][d] = ["q2", d, "R"]
+
+cyfry_maszyna = TuringMachine(states, input_alphabet, tape_alphabet, transitions, start_state, accept_state, reject_state)
+
+# Funkcja pomocnicza do symulacji i wizualizacji
+def symuluj(tape_input):
+    print(f"\nSymulacja dla wejścia: {tape_input}")
+    steps = cyfry_maszyna.przetworz_wejscie(tape_input)
+    wizualizuj_maszyne(cyfry_maszyna, steps)
+
+w1 = "[0107, 999422, 3]"
+w2 = "[0107 999422, 3]"
+w3 = "[0107, 999a22, 3]"
+
+# Symulacje
+symuluj(w1)
+time.sleep(2)
+cyfry_maszyna = TuringMachine(states, input_alphabet, tape_alphabet, transitions, start_state, accept_state, reject_state)
+symuluj(w2)
+time.sleep(2)
+cyfry_maszyna = TuringMachine(states, input_alphabet, tape_alphabet, transitions, start_state, accept_state, reject_state)
+symuluj(w3)
